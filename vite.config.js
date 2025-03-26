@@ -7,5 +7,11 @@ export default defineConfig({
   },
   server: {
     port: 3000
+  },
+  resolve: {
+    alias: {
+      'three': './js/three.module.js',
+      'three/addons/': './js/'
+    }
   }
 });

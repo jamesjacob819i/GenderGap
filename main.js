@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import * as THREE from './js/three.module.js';
+import { GLTFLoader } from './js/GLTFLoader.js';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -84,7 +84,7 @@ const progressElement = document.getElementById('progress');
 loadingElement.style.display = 'block';
 
 loader.load(
-    '/ROOMWORKINGGIRL.glb',
+    './ROOMWORKINGGIRL.glb',
     (gltf) => {
         model = gltf.scene;
         
@@ -99,8 +99,8 @@ loader.load(
         const scale = 0.7 / maxDim;
         model.scale.setScalar(scale);
         
-        // Position model to be perfectly centered
-        model.position.set(0, 0, 0);
+        // Position model precisely in the center with proper elevation
+        model.position.set(0, 0.5, 0); // Raised higher on the Y axis for better visibility
         
         // Find interactive meshes
         model.traverse((child) => {
@@ -308,30 +308,34 @@ document.addEventListener('mouseup', () => {
 });
 
 // Adjusted zoom parameters
-const minZoom = 0.8;    // Minimum zoom
-const maxZoom = 12;     // Maximum zoom
-const zoomSpeed = 0.12; // Zoom speed
+const minZoom = 0.5;    // Reduced minimum zoom to allow closer view
+const maxZoom = 10;     // Keep maximum zoom the same
+const zoomSpeed = 0.1;  // Reduced zoom speed for more precise control
 
-// Smoother zoom handling with centered focus
+// Enhanced zoom handling
 document.addEventListener('wheel', (event) => {
     event.preventDefault();
-    const zoomDelta = event.deltaY * 0.004;
-    targetZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom + zoomDelta));
+    const zoomFactor = event.deltaY > 0 ? 1.05 : 0.95; // Made zoom steps smaller
+    targetZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom * zoomFactor));
 }, { passive: false });
 
 function updateZoom() {
     if (Math.abs(currentZoom - targetZoom) > 0.01) {
-        currentZoom += (targetZoom - currentZoom) * zoomSpeed;
+        currentZoom = THREE.MathUtils.lerp(currentZoom, targetZoom, 0.08); // Smoother interpolation
         camera.position.z = currentZoom;
-        // Keep camera focused on exact center while zooming
-        camera.lookAt(new THREE.Vector3(0, 0.1, 0));
+        camera.position.y = 0.5;
+        camera.lookAt(new THREE.Vector3(0, 0.5, 0));
         updateLightPosition();
     }
 }
 
-// Keep light position relative to camera
+// Keep light position relative to camera with adjusted offset
 function updateLightPosition() {
-    directionalLight.position.set(camera.position.x + 5, camera.position.y + 10, camera.position.z + 5);
+    directionalLight.position.set(
+        camera.position.x + 2,
+        camera.position.y + 5,
+        camera.position.z + 2
+    );
 }
 
 // Enhanced animation loop with smoother updates
